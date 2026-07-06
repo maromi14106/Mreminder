@@ -27,6 +27,11 @@ def run() -> None:
     task_service = TaskService(repository)
 
     window = MainWindow(task_service)
+    
+    from core.notification_engine import NotificationEngine
+    engine = NotificationEngine(task_service)
+    engine.start()
+
     window.show()
 
     app.exec()
