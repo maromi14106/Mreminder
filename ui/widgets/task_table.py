@@ -52,6 +52,10 @@ class TaskTable(QTableWidget):
         header.setSectionResizeMode(COL_STATUS, QHeaderView.ResizeMode.Fixed)
         self.setColumnWidth(COL_STATUS, WIDTH_STATUS)
 
+    def refresh(self, tasks: list[Task]) -> None:
+        """Refresh table with new tasks."""
+        self.set_tasks(tasks)
+
     def set_tasks(self, tasks: list[Task]) -> None:
         """Set multiple tasks to the table."""
         self.clear_tasks()
@@ -74,9 +78,20 @@ class TaskTable(QTableWidget):
         status_text = "有効" if task.enabled else "無効"
         self.setItem(row, COL_STATUS, QTableWidgetItem(status_text))
         
-        if task.id is not None:
-            self.item(row, COL_TITLE).setData(Qt.ItemDataRole.UserRole, task.id)
+        self.item(row, COL_TITLE).setData(Qt.ItemDataRole.UserRole, task)
 
     def clear_tasks(self) -> None:
         """Clear all tasks from the table."""
         self.setRowCount(0)
+
+    def current_task(self) -> Task | None:
+        """Get the currently selected task."""
+        row = self.currentRow()
+        if row < 0:
+            return None
+        return self.item(row, COL_TITLE).data(Qt.ItemDataRole.UserRole)
+
+    def selected_task_id(self) -> int | None:
+        """Get the ID of the currently selected task."""
+        task = self.current_task()
+        return task.id if task else None

@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QTimeEdit,
     QVBoxLayout,
+    QWidget,
 )
 
 from models.task import Task
@@ -24,22 +25,43 @@ DIALOG_HEIGHT = 200
 class TaskDialog(QDialog):
     """Dialog for adding or editing a task."""
 
-    def __init__(self, parent: QDialog | None = None) -> None:
+    def __init__(self, parent: QWidget | None = None, task: Task | None = None) -> None:
         """Initialize the task dialog."""
         super().__init__(parent)
-        self.setWindowTitle("タスクの追加")
+        self._task = task
+        
+        title = "タスク編集" if task else "タスク追加"
+        self.setWindowTitle(title)
         self.resize(DIALOG_WIDTH, DIALOG_HEIGHT)
 
         self._title_edit = QLineEdit()
+        self._title_edit.setPlaceholderText("タスク名を入力")
+        
         self._time_edit = QTimeEdit()
         self._time_edit.setDisplayFormat("HH:mm")
-        self._time_edit.setTime(QTime(9, 0))
         
         self._repeat_combo = QComboBox()
         self._repeat_combo.addItems(["一回", "毎日", "毎週"])
         
         self._enabled_check = QCheckBox("有効")
         self._enabled_check.setChecked(True)
+
+        if task:
+            self._title_edit.setText(task.title)
+            
+            time_parts = task.remind_at.split(":")
+            if len(time_parts) == 2:
+                self._time_edit.setTime(QTime(int(time_parts[0]), int(time_parts[1])))
+            else:
+                self._time_edit.setTime(QTime(9, 0))
+                
+            combo_idx = self._repeat_combo.findText(task.repeat_type)
+            if combo_idx >= 0:
+                self._repeat_combo.setCurrentIndex(combo_idx)
+                
+            self._enabled_check.setChecked(task.enabled)
+        else:
+            self._time_edit.setTime(QTime(9, 0))
 
         self._button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -72,18 +94,18 @@ class TaskDialog(QDialog):
         super().accept()
 
     def get_task(self) -> Task:
-        """Get the created task from dialog inputs.
-
-        Returns:
-            Task object.
-        """
+        """Get the created or edited task from dialog inputs."""
         now_str = datetime.now().isoformat()
+        
+        task_id = self._task.id if self._task else None
+        created_at = self._task.created_at if self._task else now_str
+        
         return Task(
-            id=None,
+            id=task_id,
             title=self._title_edit.text().strip(),
             remind_at=self._time_edit.time().toString("HH:mm"),
             repeat_type=self._repeat_combo.currentText(),
             enabled=self._enabled_check.isChecked(),
-            created_at=now_str,
+            created_at=created_at,
             updated_at=now_str,
         )
