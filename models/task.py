@@ -11,3 +11,5 @@ class Task:
     enabled: bool
     created_at: str
     updated_at: str
+    last_notified_at: str | None = None
+    snoozed_until: str | None = None

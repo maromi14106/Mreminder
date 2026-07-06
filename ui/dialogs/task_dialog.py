@@ -99,6 +99,8 @@ class TaskDialog(QDialog):
         
         task_id = self._task.id if self._task else None
         created_at = self._task.created_at if self._task else now_str
+        last_notified_at = self._task.last_notified_at if self._task else None
+        snoozed_until = self._task.snoozed_until if self._task else None
         
         return Task(
             id=task_id,
@@ -108,4 +110,6 @@ class TaskDialog(QDialog):
             enabled=self._enabled_check.isChecked(),
             created_at=created_at,
             updated_at=now_str,
+            last_notified_at=last_notified_at,
+            snoozed_until=snoozed_until,
         )

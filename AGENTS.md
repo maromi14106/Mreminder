@@ -2,7 +2,7 @@
 
 ## Project
 
-Kokumaro Reminder
+Mreminder
 
 Windows向けのシステムトレイ常駐型リマインダーアプリ。
 

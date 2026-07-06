@@ -1,5 +1,7 @@
 """Task service module."""
 
+from datetime import datetime
+
 from database.repository import TaskRepository
 from models.task import Task
 
@@ -29,3 +31,60 @@ class TaskService:
     def remove_task(self, task_id: int) -> None:
         """Remove a task by its ID."""
         self._repository.delete(task_id)
+
+    def mark_notified(self, task_id: int, notified_at: datetime) -> None:
+        """Mark a task as notified."""
+        self._repository.mark_notified(task_id, notified_at.isoformat())
+
+    def snooze_task(self, task_id: int, until: datetime) -> None:
+        """Snooze a task until a specific time."""
+        self._repository.snooze(task_id, until.isoformat())
+
+    def complete_task(self, task: Task, completed_at: datetime) -> None:
+        """Complete a task based on its repeat type."""
+        if task.repeat_type == "一回":
+            task.enabled = False
+
+        task.snoozed_until = None
+        task.updated_at = completed_at.isoformat()
+        
+        self.save_task(task)
+
+    def get_due_tasks(self, now: datetime) -> list[Task]:
+        """Get tasks that are due for notification."""
+        tasks = self.load_tasks()
+        due_tasks = []
+
+        now_time_str = now.strftime("%H:%M")
+        now_date = now.date()
+
+        for task in tasks:
+            if not task.enabled:
+                continue
+
+            # Check snoozed tasks
+            if task.snoozed_until is not None:
+                try:
+                    snoozed_until_dt = datetime.fromisoformat(task.snoozed_until)
+                    if now >= snoozed_until_dt:
+                        due_tasks.append(task)
+                except ValueError:
+                    # Ignore invalid date strings
+                    continue
+                continue
+
+            # Check regular reminder tasks
+            if task.remind_at == now_time_str:
+                if task.last_notified_at is not None:
+                    try:
+                        last_notified_dt = datetime.fromisoformat(task.last_notified_at)
+                        if last_notified_dt.date() == now_date:
+                            # Already notified today
+                            continue
+                    except ValueError:
+                        # Ignore invalid date strings and do not notify
+                        continue
+                        
+                due_tasks.append(task)
+
+        return due_tasks

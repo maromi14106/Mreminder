@@ -5,7 +5,7 @@ from collections.abc import Iterable, Sequence
 from types import TracebackType
 
 DB_DIR = Path(__file__).parent.parent / "data"
-DB_PATH = DB_DIR / "kokumaro.db"
+DB_PATH = DB_DIR / "mreminder.db"
 
 
 class Database:
