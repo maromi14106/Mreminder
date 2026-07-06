@@ -1,6 +1,26 @@
 """Task table widget module."""
 
-from PySide6.QtWidgets import QAbstractItemView, QHeaderView, QTableWidget
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import (
+    QAbstractItemView,
+    QHeaderView,
+    QTableWidget,
+    QTableWidgetItem,
+)
+
+from models.task import Task
+
+COLUMN_COUNT = 5
+COL_CHECK = 0
+COL_TITLE = 1
+COL_TIME = 2
+COL_REPEAT = 3
+COL_STATUS = 4
+
+WIDTH_CHECK = 30
+WIDTH_TIME = 100
+WIDTH_REPEAT = 100
+WIDTH_STATUS = 80
 
 
 class TaskTable(QTableWidget):
@@ -10,36 +30,53 @@ class TaskTable(QTableWidget):
         """Initialize the task table."""
         super().__init__()
 
-        self.setColumnCount(5)
-        self.setHorizontalHeaderLabels(
-            ["✔", "タイトル", "時刻", "繰り返し", "状態"]
-        )
+        self.setColumnCount(COLUMN_COUNT)
+        self.setHorizontalHeaderLabels(["✔", "タイトル", "時刻", "繰り返し", "状態"])
 
-        # 行単位での選択、単一行のみ選択可
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-
-        # 編集禁止
         self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
 
-        # 列幅とヘッダーの設定
         header = self.horizontalHeader()
+        header.setSectionResizeMode(COL_CHECK, QHeaderView.ResizeMode.Fixed)
+        self.setColumnWidth(COL_CHECK, WIDTH_CHECK)
         
-        # ✔列: 固定幅
-        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
-        self.setColumnWidth(0, 30)
+        header.setSectionResizeMode(COL_TITLE, QHeaderView.ResizeMode.Stretch)
         
-        # タイトル列: 残りのスペースを埋める
-        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(COL_TIME, QHeaderView.ResizeMode.Fixed)
+        self.setColumnWidth(COL_TIME, WIDTH_TIME)
         
-        # 時刻列: 固定幅
-        header.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
-        self.setColumnWidth(2, 100)
+        header.setSectionResizeMode(COL_REPEAT, QHeaderView.ResizeMode.Fixed)
+        self.setColumnWidth(COL_REPEAT, WIDTH_REPEAT)
         
-        # 繰り返し列: 固定幅
-        header.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
-        self.setColumnWidth(3, 100)
+        header.setSectionResizeMode(COL_STATUS, QHeaderView.ResizeMode.Fixed)
+        self.setColumnWidth(COL_STATUS, WIDTH_STATUS)
+
+    def set_tasks(self, tasks: list[Task]) -> None:
+        """Set multiple tasks to the table."""
+        self.clear_tasks()
+        for task in tasks:
+            self.add_task(task)
+
+    def add_task(self, task: Task) -> None:
+        """Add a single task to the table."""
+        row = self.rowCount()
+        self.insertRow(row)
+
+        check_item = QTableWidgetItem("✔" if task.enabled else "")
+        check_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setItem(row, COL_CHECK, check_item)
+
+        self.setItem(row, COL_TITLE, QTableWidgetItem(task.title))
+        self.setItem(row, COL_TIME, QTableWidgetItem(task.remind_at))
+        self.setItem(row, COL_REPEAT, QTableWidgetItem(task.repeat_type))
         
-        # 状態列: 固定幅
-        header.setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)
-        self.setColumnWidth(4, 80)
+        status_text = "有効" if task.enabled else "無効"
+        self.setItem(row, COL_STATUS, QTableWidgetItem(status_text))
+        
+        if task.id is not None:
+            self.item(row, COL_TITLE).setData(Qt.ItemDataRole.UserRole, task.id)
+
+    def clear_tasks(self) -> None:
+        """Clear all tasks from the table."""
+        self.setRowCount(0)

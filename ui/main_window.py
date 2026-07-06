@@ -2,6 +2,7 @@
 
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
+    QDialog,
     QLabel,
     QMainWindow,
     QMessageBox,
@@ -9,7 +10,15 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from database.database import Database
+from database.repository import TaskRepository
+from services.task_service import TaskService
+from ui.dialogs.task_dialog import TaskDialog
 from ui.widgets.task_table import TaskTable
+
+WINDOW_WIDTH = 900
+WINDOW_HEIGHT = 600
+MARGIN = 10
 
 
 class MainWindow(QMainWindow):
@@ -19,10 +28,13 @@ class MainWindow(QMainWindow):
         """Initialize the main window."""
         super().__init__()
 
-        self.setWindowTitle("こくまろりまいんだー Pro")
-        self.resize(900, 600)
+        self.setWindowTitle("Mreminder")
+        self.resize(WINDOW_WIDTH, WINDOW_HEIGHT)
 
-        # アクションとウィジェットのインスタンス変数を型ヒント付きで宣言
+        self._db = Database()
+        self._repository = TaskRepository(self._db)
+        self._task_service = TaskService(self._repository)
+
         self._action_add: QAction
         self._action_edit: QAction
         self._action_delete: QAction
@@ -33,6 +45,7 @@ class MainWindow(QMainWindow):
         self._status_next_notify: QLabel
 
         self._build_ui()
+        self._load_tasks()
 
     def _build_ui(self) -> None:
         """Build the complete UI."""
@@ -53,7 +66,6 @@ class MainWindow(QMainWindow):
     def _create_menu(self) -> None:
         """Create the menu bar."""
         menubar = self.menuBar()
-        
         menubar.addMenu("ファイル")
         menubar.addMenu("編集")
         menubar.addMenu("設定")
@@ -63,7 +75,6 @@ class MainWindow(QMainWindow):
         """Create the main toolbar."""
         toolbar = self.addToolBar("メインツールバー")
         toolbar.setMovable(False)
-        
         toolbar.addAction(self._action_add)
         toolbar.addAction(self._action_edit)
         toolbar.addAction(self._action_delete)
@@ -74,8 +85,7 @@ class MainWindow(QMainWindow):
         """Create and set the central widget."""
         central = QWidget()
         layout = QVBoxLayout()
-        # テーブルを広く使うためマージンを調整
-        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setContentsMargins(MARGIN, MARGIN, MARGIN, MARGIN)
         
         self._task_table = TaskTable()
         layout.addWidget(self._task_table)
@@ -87,20 +97,42 @@ class MainWindow(QMainWindow):
         """Create and set up the status bar."""
         statusbar = self.statusBar()
         
-        # 左側にタスク数を表示
         self._status_task_count = QLabel("タスク数：0")
         statusbar.addWidget(self._status_task_count)
         
-        # 右側に次回通知を表示 (addPermanentWidgetで右寄せになる)
         self._status_next_notify = QLabel("次回通知：なし")
         statusbar.addPermanentWidget(self._status_next_notify)
 
     def _connect_signals(self) -> None:
         """Connect signals and slots."""
-        self._action_add.triggered.connect(self._show_not_implemented)
+        self._action_add.triggered.connect(self._on_action_add_triggered)
         self._action_edit.triggered.connect(self._show_not_implemented)
         self._action_delete.triggered.connect(self._show_not_implemented)
         self._action_quick_add.triggered.connect(self._show_not_implemented)
+
+    def _on_action_add_triggered(self) -> None:
+        """Handle the add action."""
+        dialog = TaskDialog(self)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            task = dialog.get_task()
+            
+            task_id = self._task_service.add_task(task)
+            task.id = task_id
+            
+            self._task_table.add_task(task)
+            self._update_statusbar()
+
+    def _load_tasks(self) -> None:
+        """Load tasks from database and populate the table."""
+        tasks = self._task_service.get_tasks()
+        self._task_table.set_tasks(tasks)
+        self._update_statusbar()
+
+    def _update_statusbar(self) -> None:
+        """Update the status bar information."""
+        count = self._task_table.rowCount()
+        self._status_task_count.setText(f"タスク数：{count}")
+        self._status_next_notify.setText("次回通知：なし")
 
     def _show_not_implemented(self) -> None:
         """Show a 'not implemented' message box."""
