@@ -1,6 +1,6 @@
 """Main window module."""
 
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QCloseEvent
 from PySide6.QtWidgets import (
     QDialog,
     QLabel,
@@ -29,6 +29,8 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("Mreminder")
         self.resize(WINDOW_WIDTH, WINDOW_HEIGHT)
+
+        self._allow_close = False
 
         self._task_service = task_service
 
@@ -175,3 +177,26 @@ class MainWindow(QMainWindow):
     def _show_not_implemented(self) -> None:
         """Show a 'not implemented' message box."""
         QMessageBox.information(self, "情報", "未実装です")
+
+    def allow_close(self) -> None:
+        """Allow the window to be closed."""
+        self._allow_close = True
+        self.close()
+
+    def show_window(self) -> None:
+        """Show and bring the window to front."""
+        self.show()
+        self.raise_()
+        self.activateWindow()
+
+    def refresh_tasks(self) -> None:
+        """Refresh the tasks list safely from outside."""
+        self._reload_tasks()
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        """Override close event to hide instead of exit."""
+        if self._allow_close:
+            event.accept()
+        else:
+            event.ignore()
+            self.hide()

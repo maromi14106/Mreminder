@@ -50,6 +50,22 @@ class TaskService:
         
         self.save_task(task)
 
+    def quick_add(self, minutes: int, title: str = "クイックリマインダー") -> int:
+        """Add a quick reminder task."""
+        now = datetime.now()
+        remind_time = datetime.fromtimestamp(now.timestamp() + minutes * 60)
+        task = Task(
+            title=title,
+            remind_at=remind_time.strftime("%H:%M"),
+            repeat_type="一回",
+            enabled=True,
+            created_at=now.isoformat(),
+            updated_at=now.isoformat(),
+            last_notified_at=None,
+            snoozed_until=None,
+        )
+        return self.save_task(task)
+
     def get_due_tasks(self, now: datetime) -> list[Task]:
         """Get tasks that are due for notification."""
         tasks = self.load_tasks()
