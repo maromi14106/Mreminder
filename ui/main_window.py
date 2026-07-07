@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
 )
 
 from database.exceptions import TaskRepositoryError
+from services.autostart_service import AutoStartService
 from services.task_service import TaskService
 from ui.dialogs.task_dialog import TaskDialog
 from ui.widgets.task_table import TaskTable
@@ -23,7 +24,7 @@ MARGIN = 10
 class MainWindow(QMainWindow):
     """Main window of the application."""
 
-    def __init__(self, task_service: TaskService) -> None:
+    def __init__(self, task_service: TaskService, autostart_service: AutoStartService) -> None:
         """Initialize the main window."""
         super().__init__()
 
@@ -33,11 +34,13 @@ class MainWindow(QMainWindow):
         self._allow_close = False
 
         self._task_service = task_service
+        self._autostart_service = autostart_service
 
         self._action_add: QAction
         self._action_edit: QAction
         self._action_delete: QAction
         self._action_quick_add: QAction
+        self._action_settings: QAction
 
         self._task_table: TaskTable
         self._status_task_count: QLabel
@@ -61,13 +64,17 @@ class MainWindow(QMainWindow):
         self._action_edit = QAction("編集", self)
         self._action_delete = QAction("削除", self)
         self._action_quick_add = QAction("クイック追加", self)
+        self._action_settings = QAction("設定...", self)
 
     def _create_menu(self) -> None:
         """Create the menu bar."""
         menubar = self.menuBar()
         menubar.addMenu("ファイル")
         menubar.addMenu("編集")
-        menubar.addMenu("設定")
+        
+        settings_menu = menubar.addMenu("設定")
+        settings_menu.addAction(self._action_settings)
+        
         menubar.addMenu("ヘルプ")
 
     def _create_toolbar(self) -> None:
@@ -108,6 +115,7 @@ class MainWindow(QMainWindow):
         self._action_edit.triggered.connect(self._edit_task)
         self._action_delete.triggered.connect(self._delete_task)
         self._action_quick_add.triggered.connect(self._show_not_implemented)
+        self._action_settings.triggered.connect(self._show_settings)
         self._task_table.doubleClicked.connect(lambda index: self._edit_task())
 
     def _add_task(self) -> None:
@@ -177,6 +185,12 @@ class MainWindow(QMainWindow):
     def _show_not_implemented(self) -> None:
         """Show a 'not implemented' message box."""
         QMessageBox.information(self, "情報", "未実装です")
+
+    def _show_settings(self) -> None:
+        """Show the settings dialog."""
+        from ui.dialogs.settings_dialog import SettingsDialog
+        dialog = SettingsDialog(self, self._autostart_service)
+        dialog.exec()
 
     def allow_close(self) -> None:
         """Allow the window to be closed."""
