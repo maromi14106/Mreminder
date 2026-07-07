@@ -52,6 +52,9 @@ class TaskTable(QTableWidget):
         header.setSectionResizeMode(COL_STATUS, QHeaderView.ResizeMode.Fixed)
         self.setColumnWidth(COL_STATUS, WIDTH_STATUS)
 
+        self.verticalHeader().hide()
+        self.setCornerButtonEnabled(False)
+
     def refresh(self, tasks: list[Task]) -> None:
         """Refresh table with new tasks."""
         self.set_tasks(tasks)

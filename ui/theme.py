@@ -1,95 +1,75 @@
-"""Application theme module."""
+"""Theme module for the application."""
 
 DARK_THEME = """
 QWidget {
-    background-color: #1e1e1e;
+    background-color: #2b2b2b;
     color: #ffffff;
-    font-size: 10pt;
-}
-
-QMainWindow {
-    background-color: #1e1e1e;
 }
 
 QMenuBar {
-    background-color: #252526;
+    background-color: #2b2b2b;
     color: #ffffff;
 }
 
 QMenuBar::item:selected {
-    background-color: #333333;
+    background-color: #3b3b3b;
 }
 
 QMenu {
-    background-color: #252526;
+    background-color: #2b2b2b;
     color: #ffffff;
-    border: 1px solid #3f3f46;
+    border: 1px solid #3b3b3b;
 }
 
 QMenu::item:selected {
-    background-color: #094771;
+    background-color: #3b3b3b;
 }
 
 QToolBar {
-    background-color: #252526;
-    border-bottom: 1px solid #3f3f46;
-    spacing: 6px;
+    background-color: #2b2b2b;
+    border: none;
 }
 
 QPushButton {
-    background-color: #2d2d30;
+    background-color: #3b3b3b;
     color: #ffffff;
-    border: 1px solid #3f3f46;
-    border-radius: 6px;
-    padding: 6px 10px;
+    border: 1px solid #555555;
+    padding: 5px;
+    border-radius: 3px;
 }
 
 QPushButton:hover {
-    background-color: #3a3a3d;
+    background-color: #4b4b4b;
 }
 
 QPushButton:pressed {
-    background-color: #094771;
+    background-color: #1b1b1b;
 }
 
-QTableWidget {
-    background-color: #252526;
-    alternate-background-color: #2d2d30;
+QLineEdit, QComboBox, QSpinBox, QTimeEdit {
+    background-color: #3b3b3b;
     color: #ffffff;
-    gridline-color: #3f3f46;
-    border: 1px solid #3f3f46;
+    border: 1px solid #555555;
+    padding: 3px;
+}
+
+QTableView {
+    background-color: #2b2b2b;
+    color: #ffffff;
+    alternate-background-color: #323232;
+    selection-background-color: #4b4b4b;
+    gridline-color: #555555;
 }
 
 QHeaderView::section {
-    background-color: #2d2d30;
+    background-color: #3b3b3b;
     color: #ffffff;
-    padding: 6px;
-    border: 1px solid #3f3f46;
-}
-
-QLineEdit,
-QTimeEdit,
-QComboBox {
-    background-color: #252526;
-    color: #ffffff;
-    border: 1px solid #3f3f46;
-    border-radius: 4px;
     padding: 4px;
+    border: 1px solid #555555;
 }
 
 QStatusBar {
-    background-color: #252526;
-    color: #cccccc;
-    border-top: 1px solid #3f3f46;
-}
-
-QDialog {
-    background-color: #1e1e1e;
-    color: #ffffff;
-}
-
-QMessageBox {
-    background-color: #1e1e1e;
+    background-color: #2b2b2b;
     color: #ffffff;
 }
 """

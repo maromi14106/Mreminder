@@ -1,6 +1,6 @@
 """Task service module."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from database.repository import TaskRepository
 from models.task import Task
@@ -53,8 +53,9 @@ class TaskService:
     def quick_add(self, minutes: int, title: str = "クイックリマインダー") -> int:
         """Add a quick reminder task."""
         now = datetime.now()
-        remind_time = datetime.fromtimestamp(now.timestamp() + minutes * 60)
+        remind_time = now + timedelta(minutes=minutes)
         task = Task(
+            id=None,
             title=title,
             remind_at=remind_time.strftime("%H:%M"),
             repeat_type="一回",
