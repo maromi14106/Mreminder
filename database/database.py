@@ -4,16 +4,17 @@ from typing import Any
 from collections.abc import Iterable, Sequence
 from types import TracebackType
 
-DB_DIR = Path(__file__).parent.parent / "data"
-DB_PATH = DB_DIR / "mreminder.db"
+from core.app_paths import get_database_path
 
 
 class Database:
-    def __init__(self, db_path: str | Path = DB_PATH) -> None:
+    def __init__(self, db_path: str | Path | None = None) -> None:
+        path = Path(db_path) if db_path is not None else get_database_path()
+
         # DBを保存するディレクトリが存在しない場合は作成
-        DB_DIR.mkdir(parents=True, exist_ok=True)
+        path.parent.mkdir(parents=True, exist_ok=True)
         self._connection = sqlite3.connect(
-            db_path,
+            path,
             detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
         )
 
