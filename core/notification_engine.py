@@ -7,6 +7,7 @@ from PySide6.QtCore import QObject, QTimer
 from database.exceptions import TaskRepositoryError
 from models.task import Task
 from services.task_service import TaskService
+from services.notification_sound_service import NotificationSoundService
 from ui.notifications.notification_manager import NotificationManager
 
 CHECK_INTERVAL_MS = 15000
@@ -16,10 +17,13 @@ SNOOZE_MINUTES = 5
 class NotificationEngine(QObject):
     """Engine that checks for due tasks and manages notifications."""
 
-    def __init__(self, task_service: TaskService) -> None:
+    def __init__(
+        self, task_service: TaskService, sound_service: NotificationSoundService
+    ) -> None:
         """Initialize the notification engine."""
         super().__init__()
         self._task_service = task_service
+        self._sound_service = sound_service
         self._manager = NotificationManager()
 
         self._manager.popup_completed.connect(self._on_popup_completed)
@@ -40,6 +44,8 @@ class NotificationEngine(QObject):
             now = datetime.now()
             due_tasks = self._task_service.get_due_tasks(now)
 
+            shown_any = False
+
             for task in due_tasks:
                 if task.id is None:
                     continue
@@ -50,6 +56,13 @@ class NotificationEngine(QObject):
                     self._task_service.mark_notified(task.id, now)
                     task.last_notified_at = notified_at
                     task.snoozed_until = None
+                    shown_any = True
+
+            if shown_any:
+                try:
+                    self._sound_service.play_notification()
+                except Exception as e:
+                    print(f"NotificationEngine Sound Error: {e}")
 
         except TaskRepositoryError as e:
             print(f"NotificationEngine Database Error: {e}")

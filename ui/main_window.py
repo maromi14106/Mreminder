@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
 
 from database.exceptions import TaskRepositoryError
 from services.autostart_service import AutoStartService
+from services.notification_sound_service import NotificationSoundService
 from services.task_service import TaskService
 from ui.dialogs.task_dialog import TaskDialog
 from ui.widgets.task_table import TaskTable
@@ -25,7 +26,10 @@ class MainWindow(QMainWindow):
     """Main window of the application."""
 
     def __init__(
-        self, task_service: TaskService, autostart_service: AutoStartService
+        self,
+        task_service: TaskService,
+        autostart_service: AutoStartService,
+        sound_service: NotificationSoundService,
     ) -> None:
         """Initialize the main window."""
         super().__init__()
@@ -37,6 +41,7 @@ class MainWindow(QMainWindow):
 
         self._task_service = task_service
         self._autostart_service = autostart_service
+        self._sound_service = sound_service
 
         self._action_add: QAction
         self._action_edit: QAction
@@ -192,7 +197,7 @@ class MainWindow(QMainWindow):
         """Show the settings dialog."""
         from ui.dialogs.settings_dialog import SettingsDialog
 
-        dialog = SettingsDialog(self, self._autostart_service)
+        dialog = SettingsDialog(self, self._autostart_service, self._sound_service)
         dialog.exec()
 
     def allow_close(self) -> None:

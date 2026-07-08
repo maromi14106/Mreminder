@@ -17,6 +17,8 @@ from ui.tray.tray_controller import TrayController
 
 def create_app() -> QApplication:
     app = QApplication([])
+    app.setOrganizationName("Mreminder")
+    app.setApplicationName("Mreminder")
     app.setQuitOnLastWindowClosed(False)
 
     app.setStyleSheet(DARK_THEME)
@@ -43,11 +45,17 @@ def run() -> None:
     autostart_registry = AutoStartRegistry()
     autostart_service = AutoStartService(autostart_registry)
 
-    window = MainWindow(task_service, autostart_service)
+    from core.app_settings import AppSettings
+    from services.notification_sound_service import NotificationSoundService
+
+    app_settings = AppSettings()
+    sound_service = NotificationSoundService(app_settings)
+
+    window = MainWindow(task_service, autostart_service, sound_service)
 
     from core.notification_engine import NotificationEngine
 
-    engine = NotificationEngine(task_service)
+    engine = NotificationEngine(task_service, sound_service)
     engine.start()
 
     tray_controller = TrayController()
@@ -61,6 +69,7 @@ def run() -> None:
     tray_controller.quick_add_requested.connect(on_quick_add)
 
     def on_quit() -> None:
+        sound_service.stop()
         window.allow_close()
         db.close()
         app.quit()
