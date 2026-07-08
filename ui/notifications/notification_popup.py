@@ -22,16 +22,15 @@ class NotificationPopup(QWidget):
         """Initialize the popup."""
         super().__init__()
         self._task = task
-        
+
         self.setWindowFlags(
-            Qt.WindowType.FramelessWindowHint | 
-            Qt.WindowType.WindowDoesNotAcceptFocus
+            Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowDoesNotAcceptFocus
         )
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
-        
+
         self.setFixedSize(280, 100)
         self.setObjectName("NotificationPopup")
-        
+
         self.setStyleSheet("""
             #NotificationPopup {
                 background-color: #2b2b2b;
@@ -59,29 +58,29 @@ class NotificationPopup(QWidget):
         """Build the UI layout."""
         layout = QVBoxLayout()
         layout.setContentsMargins(15, 10, 15, 10)
-        
+
         header = QLabel("リマインダー")
         header.setStyleSheet("font-weight: bold; font-size: 12px; color: #a0a0a0;")
         layout.addWidget(header)
-        
+
         title = QLabel(self._task.title)
         title.setStyleSheet("font-size: 14px; margin-top: 5px; margin-bottom: 5px;")
         layout.addWidget(title)
-        
+
         button_layout = QHBoxLayout()
-        
+
         btn_complete = QPushButton("完了")
         btn_snooze = QPushButton("5分後")
-        
+
         btn_complete.clicked.connect(self._on_complete)
         btn_snooze.clicked.connect(self._on_snooze)
-        
+
         button_layout.addStretch()
         button_layout.addWidget(btn_snooze)
         button_layout.addWidget(btn_complete)
-        
+
         layout.addLayout(button_layout)
-        
+
         self.setLayout(layout)
 
     def _on_complete(self) -> None:
@@ -91,7 +90,7 @@ class NotificationPopup(QWidget):
     def _on_snooze(self) -> None:
         """Handle snooze button click."""
         self.snoozed.emit(self._task)
-        
+
     @property
     def task(self) -> Task:
         """Get the associated task."""

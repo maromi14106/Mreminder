@@ -40,15 +40,15 @@ class TaskTable(QTableWidget):
         header = self.horizontalHeader()
         header.setSectionResizeMode(COL_CHECK, QHeaderView.ResizeMode.Fixed)
         self.setColumnWidth(COL_CHECK, WIDTH_CHECK)
-        
+
         header.setSectionResizeMode(COL_TITLE, QHeaderView.ResizeMode.Stretch)
-        
+
         header.setSectionResizeMode(COL_TIME, QHeaderView.ResizeMode.Fixed)
         self.setColumnWidth(COL_TIME, WIDTH_TIME)
-        
+
         header.setSectionResizeMode(COL_REPEAT, QHeaderView.ResizeMode.Fixed)
         self.setColumnWidth(COL_REPEAT, WIDTH_REPEAT)
-        
+
         header.setSectionResizeMode(COL_STATUS, QHeaderView.ResizeMode.Fixed)
         self.setColumnWidth(COL_STATUS, WIDTH_STATUS)
 
@@ -77,10 +77,10 @@ class TaskTable(QTableWidget):
         self.setItem(row, COL_TITLE, QTableWidgetItem(task.title))
         self.setItem(row, COL_TIME, QTableWidgetItem(task.remind_at))
         self.setItem(row, COL_REPEAT, QTableWidgetItem(task.repeat_type))
-        
+
         status_text = "有効" if task.enabled else "無効"
         self.setItem(row, COL_STATUS, QTableWidgetItem(status_text))
-        
+
         self.item(row, COL_TITLE).setData(Qt.ItemDataRole.UserRole, task)
 
     def clear_tasks(self) -> None:

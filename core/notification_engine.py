@@ -21,10 +21,10 @@ class NotificationEngine(QObject):
         super().__init__()
         self._task_service = task_service
         self._manager = NotificationManager()
-        
+
         self._manager.popup_completed.connect(self._on_popup_completed)
         self._manager.popup_snoozed.connect(self._on_popup_snoozed)
-        
+
         self._timer = QTimer(self)
         self._timer.setInterval(CHECK_INTERVAL_MS)
         self._timer.timeout.connect(self._check_tasks)
@@ -39,18 +39,18 @@ class NotificationEngine(QObject):
         try:
             now = datetime.now()
             due_tasks = self._task_service.get_due_tasks(now)
-            
+
             for task in due_tasks:
                 if task.id is None:
                     continue
-                    
+
                 shown = self._manager.show_task(task)
                 if shown:
                     notified_at = now.isoformat()
                     self._task_service.mark_notified(task.id, now)
                     task.last_notified_at = notified_at
                     task.snoozed_until = None
-                    
+
         except TaskRepositoryError as e:
             print(f"NotificationEngine Database Error: {e}")
         except Exception as e:
@@ -67,7 +67,7 @@ class NotificationEngine(QObject):
         """Handle when a user clicks 'Snooze' on a popup."""
         if task.id is None:
             return
-            
+
         try:
             until = datetime.now() + timedelta(minutes=SNOOZE_MINUTES)
             self._task_service.snooze_task(task.id, until)

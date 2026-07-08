@@ -23,7 +23,7 @@ class AutoStartService:
         # Normal python execution
         python_executable = Path(sys.executable)
         pythonw_executable = python_executable.with_name("pythonw.exe")
-        
+
         if pythonw_executable.exists():
             exec_path = pythonw_executable
         else:

@@ -33,10 +33,10 @@ class NotificationManager(QObject):
         popup = NotificationPopup(task)
         popup.completed.connect(self._on_popup_completed)
         popup.snoozed.connect(self._on_popup_snoozed)
-        
+
         self._popups.append(popup)
         self._recalculate_positions()
-        
+
         popup.show()
         return True
 
@@ -58,7 +58,7 @@ class NotificationManager(QObject):
                 popup.close()
                 popup.deleteLater()
                 break
-                
+
         self._recalculate_positions()
 
     def _recalculate_positions(self) -> None:
@@ -66,15 +66,15 @@ class NotificationManager(QObject):
         screen = QGuiApplication.primaryScreen()
         if not screen:
             return
-            
+
         geometry = screen.availableGeometry()
-        
+
         current_bottom = geometry.bottom() - self._margin_bottom
         right = geometry.right() - self._margin_right
-        
+
         for popup in self._popups:
             x = right - popup.width()
             y = current_bottom - popup.height()
             popup.move(x, y)
-            
+
             current_bottom = y - self._spacing

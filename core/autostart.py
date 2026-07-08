@@ -5,6 +5,7 @@ import winreg
 
 class AutoStartError(Exception):
     """Exception raised for errors in the autostart registry operations."""
+
     pass
 
 

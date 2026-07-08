@@ -2,6 +2,7 @@
 
 from datetime import datetime, timedelta
 
+from core.schedule import calculate_next_run_after_completion
 from database.repository import TaskRepository
 from models.task import Task
 
@@ -23,8 +24,37 @@ class TaskService:
 
     def save_task(self, task: Task) -> int:
         """Save a task (create if ID is None, else update)."""
+        if task.repeat_type not in ("一回", "毎日", "毎週"):
+            raise ValueError(f"invalid repeat_type: {task.repeat_type}")
+
+        if task.repeat_type == "毎週":
+            if task.weekday is None or not (0 <= task.weekday <= 6):
+                raise ValueError("weekday must be 0-6 for 毎週")
+        else:
+            task.weekday = None
+
+        if task.next_run_at is None:
+            raise ValueError("next_run_at cannot be None")
+
+        try:
+            datetime.fromisoformat(task.next_run_at)
+        except ValueError:
+            raise ValueError("invalid next_run_at format")
+
         if task.id is None:
             return self._repository.create(task)
+
+        current = self._repository.find_by_id(task.id)
+        if current:
+            if (
+                current.remind_at != task.remind_at
+                or current.repeat_type != task.repeat_type
+                or current.weekday != task.weekday
+                or current.next_run_at != task.next_run_at
+            ):
+                task.last_notified_at = None
+                task.snoozed_until = None
+
         self._repository.update(task)
         return task.id
 
@@ -44,15 +74,22 @@ class TaskService:
         """Complete a task based on its repeat type."""
         if task.repeat_type == "一回":
             task.enabled = False
+        else:
+            if task.next_run_at is not None:
+                next_run = calculate_next_run_after_completion(
+                    completed_at, task.next_run_at, task.repeat_type
+                )
+                if next_run:
+                    task.next_run_at = next_run
 
         task.snoozed_until = None
         task.updated_at = completed_at.isoformat()
-        
+
         self.save_task(task)
 
     def quick_add(self, minutes: int, title: str = "クイックリマインダー") -> int:
         """Add a quick reminder task."""
-        now = datetime.now()
+        now = datetime.now().replace(microsecond=0)
         remind_time = now + timedelta(minutes=minutes)
         task = Task(
             id=None,
@@ -64,6 +101,8 @@ class TaskService:
             updated_at=now.isoformat(),
             last_notified_at=None,
             snoozed_until=None,
+            next_run_at=remind_time.isoformat(),
+            weekday=None,
         )
         return self.save_task(task)
 
@@ -72,36 +111,39 @@ class TaskService:
         tasks = self.load_tasks()
         due_tasks = []
 
-        now_time_str = now.strftime("%H:%M")
-        now_date = now.date()
-
         for task in tasks:
             if not task.enabled:
                 continue
 
-            # Check snoozed tasks
+            # Snooze condition overrides normal schedule
             if task.snoozed_until is not None:
                 try:
-                    snoozed_until_dt = datetime.fromisoformat(task.snoozed_until)
-                    if now >= snoozed_until_dt:
+                    snoozed_dt = datetime.fromisoformat(task.snoozed_until)
+                    if now >= snoozed_dt:
                         due_tasks.append(task)
+                        continue
+                    else:
+                        continue
                 except ValueError:
-                    # Ignore invalid date strings
-                    continue
+                    pass
+
+            if task.next_run_at is None:
                 continue
 
-            # Check regular reminder tasks
-            if task.remind_at == now_time_str:
-                if task.last_notified_at is not None:
+            try:
+                next_run_dt = datetime.fromisoformat(task.next_run_at)
+            except ValueError:
+                continue
+
+            if next_run_dt <= now:
+                if task.last_notified_at is None:
+                    due_tasks.append(task)
+                else:
                     try:
                         last_notified_dt = datetime.fromisoformat(task.last_notified_at)
-                        if last_notified_dt.date() == now_date:
-                            # Already notified today
-                            continue
+                        if last_notified_dt < next_run_dt:
+                            due_tasks.append(task)
                     except ValueError:
-                        # Ignore invalid date strings and do not notify
-                        continue
-                        
-                due_tasks.append(task)
+                        due_tasks.append(task)
 
         return due_tasks

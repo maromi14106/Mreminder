@@ -28,6 +28,8 @@ class TaskRepository(BaseRepository):
             updated_at=cast(str, row["updated_at"]),
             last_notified_at=cast(str | None, row["last_notified_at"]),
             snoozed_until=cast(str | None, row["snoozed_until"]),
+            next_run_at=cast(str | None, row["next_run_at"]),
+            weekday=cast(int | None, row["weekday"]),
         )
 
     def find_all(self) -> list[Task]:
@@ -55,8 +57,8 @@ class TaskRepository(BaseRepository):
         """Create a new task."""
         sql = """
             INSERT INTO tasks (
-                title, remind_at, repeat_type, enabled, created_at, updated_at, last_notified_at, snoozed_until
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                title, remind_at, repeat_type, enabled, created_at, updated_at, last_notified_at, snoozed_until, next_run_at, weekday
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         try:
             cursor = self.execute(
@@ -70,6 +72,8 @@ class TaskRepository(BaseRepository):
                     task.updated_at,
                     task.last_notified_at,
                     task.snoozed_until,
+                    task.next_run_at,
+                    task.weekday,
                 ),
             )
             self.commit()
@@ -90,7 +94,9 @@ class TaskRepository(BaseRepository):
                 enabled = ?,
                 updated_at = ?,
                 last_notified_at = ?,
-                snoozed_until = ?
+                snoozed_until = ?,
+                next_run_at = ?,
+                weekday = ?
             WHERE id = ?
         """
         try:
@@ -104,6 +110,8 @@ class TaskRepository(BaseRepository):
                     task.updated_at,
                     task.last_notified_at,
                     task.snoozed_until,
+                    task.next_run_at,
+                    task.weekday,
                     task.id,
                 ),
             )
@@ -132,7 +140,9 @@ class TaskRepository(BaseRepository):
             self.execute(sql, (notified_at, task_id))
             self.commit()
         except sqlite3.Error as e:
-            raise TaskRepositoryError(f"Failed to mark notified for task {task_id}.") from e
+            raise TaskRepositoryError(
+                f"Failed to mark notified for task {task_id}."
+            ) from e
 
     def snooze(self, task_id: int, snoozed_until: str) -> None:
         """Set a snooze time for a task."""

@@ -26,9 +26,7 @@ class Database:
     def connection(self) -> sqlite3.Connection:
         return self._connection
 
-    def execute(
-        self, sql: str, parameters: Sequence[Any] = ()
-    ) -> sqlite3.Cursor:
+    def execute(self, sql: str, parameters: Sequence[Any] = ()) -> sqlite3.Cursor:
         return self._connection.execute(sql, parameters)
 
     def executemany(

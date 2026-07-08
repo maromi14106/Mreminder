@@ -26,7 +26,11 @@ def create_app() -> QApplication:
 
 def run() -> None:
     parser = argparse.ArgumentParser(description="Mreminder application")
-    parser.add_argument("--silent", action="store_true", help="Start the application silently (in system tray)")
+    parser.add_argument(
+        "--silent",
+        action="store_true",
+        help="Start the application silently (in system tray)",
+    )
     args = parser.parse_args()
 
     app = create_app()
@@ -35,13 +39,14 @@ def run() -> None:
     Migration(db).run()
     repository = TaskRepository(db)
     task_service = TaskService(repository)
-    
+
     autostart_registry = AutoStartRegistry()
     autostart_service = AutoStartService(autostart_registry)
 
     window = MainWindow(task_service, autostart_service)
-    
+
     from core.notification_engine import NotificationEngine
+
     engine = NotificationEngine(task_service)
     engine.start()
 

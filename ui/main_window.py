@@ -24,7 +24,9 @@ MARGIN = 10
 class MainWindow(QMainWindow):
     """Main window of the application."""
 
-    def __init__(self, task_service: TaskService, autostart_service: AutoStartService) -> None:
+    def __init__(
+        self, task_service: TaskService, autostart_service: AutoStartService
+    ) -> None:
         """Initialize the main window."""
         super().__init__()
 
@@ -71,10 +73,10 @@ class MainWindow(QMainWindow):
         menubar = self.menuBar()
         menubar.addMenu("ファイル")
         menubar.addMenu("編集")
-        
+
         settings_menu = menubar.addMenu("設定")
         settings_menu.addAction(self._action_settings)
-        
+
         menubar.addMenu("ヘルプ")
 
     def _create_toolbar(self) -> None:
@@ -92,20 +94,20 @@ class MainWindow(QMainWindow):
         central = QWidget()
         layout = QVBoxLayout()
         layout.setContentsMargins(MARGIN, MARGIN, MARGIN, MARGIN)
-        
+
         self._task_table = TaskTable()
         layout.addWidget(self._task_table)
-        
+
         central.setLayout(layout)
         self.setCentralWidget(central)
 
     def _create_statusbar(self) -> None:
         """Create and set up the status bar."""
         statusbar = self.statusBar()
-        
+
         self._status_task_count = QLabel("タスク数：0")
         statusbar.addWidget(self._status_task_count)
-        
+
         self._status_next_notify = QLabel("次回通知：なし")
         statusbar.addPermanentWidget(self._status_next_notify)
 
@@ -135,7 +137,7 @@ class MainWindow(QMainWindow):
         if not task:
             QMessageBox.information(self, "情報", "編集するタスクを選択してください。")
             return
-            
+
         dialog = TaskDialog(self, task)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             updated_task = dialog.get_task()
@@ -151,15 +153,15 @@ class MainWindow(QMainWindow):
         if not task or task.id is None:
             QMessageBox.information(self, "情報", "削除するタスクを選択してください。")
             return
-            
+
         reply = QMessageBox.question(
             self,
             "削除の確認",
             f"タスク「{task.title}」を削除してもよろしいですか？",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No
+            QMessageBox.StandardButton.No,
         )
-        
+
         if reply == QMessageBox.StandardButton.Yes:
             try:
                 self._task_service.remove_task(task.id)
@@ -189,6 +191,7 @@ class MainWindow(QMainWindow):
     def _show_settings(self) -> None:
         """Show the settings dialog."""
         from ui.dialogs.settings_dialog import SettingsDialog
+
         dialog = SettingsDialog(self, self._autostart_service)
         dialog.exec()
 

@@ -16,7 +16,9 @@ from services.autostart_service import AutoStartService
 class SettingsDialog(QDialog):
     """Dialog for application settings."""
 
-    def __init__(self, parent: QWidget | None, autostart_service: AutoStartService) -> None:
+    def __init__(
+        self, parent: QWidget | None, autostart_service: AutoStartService
+    ) -> None:
         """Initialize the settings dialog."""
         super().__init__(parent)
         self.setWindowTitle("設定")
