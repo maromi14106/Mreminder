@@ -79,6 +79,32 @@ def test_app_second_instance_silent(monkeypatch, app):
     mock_single_instance.notify_primary.assert_called_once_with(silent=True)
 
 
+def test_app_sets_name_and_version(monkeypatch, app):
+    """Test that application name, version, and organization name are set correctly."""
+    monkeypatch.setattr(sys, "argv", ["main.py", "--silent"])
+
+    mock_logger = MagicMock()
+    monkeypatch.setattr("core.logger.setup_logger", lambda: mock_logger)
+
+    mock_single_instance = MagicMock(spec=SingleInstance)
+    mock_single_instance.is_primary = False
+
+    def mock_single_instance_init(*args, **kwargs):
+        return mock_single_instance
+
+    monkeypatch.setattr(
+        "core.single_instance.SingleInstance", mock_single_instance_init
+    )
+
+    run()
+
+    from core.version import APP_NAME, APP_VERSION
+
+    assert app.applicationName() == APP_NAME
+    assert app.applicationVersion() == APP_VERSION
+    assert app.organizationName() == APP_NAME
+
+
 def test_app_startup_exception_logs_and_shows_messagebox(monkeypatch, app):
     """Test that startup exception is logged and a message box is shown."""
     monkeypatch.setattr(sys, "argv", ["main.py"])
@@ -108,3 +134,28 @@ def test_app_startup_exception_logs_and_shows_messagebox(monkeypatch, app):
     )
     mock_msg_box.assert_called_once()
     mock_sys_exit.assert_called_once_with(1)
+
+
+def test_app_logs_version_info(monkeypatch, app):
+    """Test that app logs version info on startup."""
+    monkeypatch.setattr(sys, "argv", ["main.py"])
+
+    mock_logger = MagicMock()
+    monkeypatch.setattr("core.logger.setup_logger", lambda: mock_logger)
+
+    mock_single_instance = MagicMock(spec=SingleInstance)
+    mock_single_instance.is_primary = False
+
+    def mock_single_instance_init(*args, **kwargs):
+        return mock_single_instance
+
+    monkeypatch.setattr(
+        "core.single_instance.SingleInstance", mock_single_instance_init
+    )
+
+    from core.version import APP_NAME, APP_VERSION
+
+    run()
+
+    mock_logger.info.assert_any_call(f"App Name: {APP_NAME}")
+    mock_logger.info.assert_any_call(f"Version: {APP_VERSION}")

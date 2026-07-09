@@ -33,6 +33,7 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     uac_admin=False,
+    version='resources/windows_version_info.txt',
 )
 coll = COLLECT(
     exe,

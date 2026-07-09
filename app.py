@@ -33,8 +33,11 @@ def run() -> None:
         if app is None:
             app = QApplication(sys.argv)
 
-        app.setOrganizationName("Mreminder")
-        app.setApplicationName("Mreminder")
+        from core.version import APP_NAME, APP_VERSION
+
+        app.setOrganizationName(APP_NAME)
+        app.setApplicationName(APP_NAME)
+        app.setApplicationVersion(APP_VERSION)
         app.setQuitOnLastWindowClosed(False)
         app.setStyleSheet(DARK_THEME)
 
@@ -45,7 +48,9 @@ def run() -> None:
         app_data_path = get_app_data_dir()
         db_path = get_database_path()
 
-        logger.info("--- Mreminder Starting ---")
+        logger.info(f"--- {APP_NAME} Starting ---")
+        logger.info(f"App Name: {APP_NAME}")
+        logger.info(f"Version: {APP_VERSION}")
         logger.info(f"Date: {datetime.now().isoformat()}")
         logger.info(f"sys.executable: {sys.executable}")
         logger.info(f"sys.frozen: {getattr(sys, 'frozen', False)}")
